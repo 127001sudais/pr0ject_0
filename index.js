@@ -1,6 +1,7 @@
 let express = require("express");
 let morgan = require("morgan");
 let mongoose = require("mongoose");
+let Blog = require("./models/blog");
 
 // express app
 let app = express();
@@ -27,9 +28,48 @@ app.use(express.urlencoded({ extended: true }));
 
 // routes
 app.get("/", (req, res) => {
-  res.render("index");
+  res.redirect("/blogs");
 });
 
+app.get("/about", (req, res) => {
+  res.render("about", { title: "about" });
+});
+
+// posting blogs
+app.post("/blogs", (req, res) => {
+  let blog = new Blog(req.body);
+  blog
+    .save()
+    .then((result) => {
+      console.log(result);
+      res.redirect("/blogs");
+    })
+    .catch((err) => console.log(err));
+});
+
+app.get("/blogs/:id", (req, res) => {
+  let id = req.params.id;
+  Blog.findById(id)
+    .then((result) =>
+      res.render("details", { blog: result, title: result.title })
+    )
+    .catch((err) => console.log(err));
+});
+
+app.get("/blogs", (req, res) => {
+  Blog.find()
+    .sort({ createdAt: -1 })
+    .then((result) =>
+      res.render("index", { blogs: result, title: "all blogs" })
+    )
+    .catch((err) => console.log(err));
+});
+
+app.get("/blogs/create", (req, res) => {
+  res.render("create", { title: "create new blog" });
+});
+
+// 404 error page not found
 app.use((req, res) => {
   res.status(404).render("404", { title: "page not found" });
 });

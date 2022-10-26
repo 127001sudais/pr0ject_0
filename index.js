@@ -35,6 +35,19 @@ app.get("/about", (req, res) => {
   res.render("about", { title: "about" });
 });
 
+app.get("/blogs/create", (req, res) => {
+  res.render("create", { title: "create new blog" });
+});
+
+app.get("/blogs", (req, res) => {
+  Blog.find()
+    .sort({ createdAt: -1 })
+    .then((result) =>
+      res.render("index", { blogs: result, title: "all blogs" })
+    )
+    .catch((err) => console.log(err));
+});
+
 // posting blogs
 app.post("/blogs", (req, res) => {
   let blog = new Blog(req.body);
@@ -50,23 +63,19 @@ app.post("/blogs", (req, res) => {
 app.get("/blogs/:id", (req, res) => {
   let id = req.params.id;
   Blog.findById(id)
-    .then((result) =>
-      res.render("details", { blog: result, title: result.title })
-    )
+    .then((result) => {
+      res.render("details", { blog: result, title: result.title });
+    })
     .catch((err) => console.log(err));
 });
 
-app.get("/blogs", (req, res) => {
-  Blog.find()
-    .sort({ createdAt: -1 })
-    .then((result) =>
-      res.render("index", { blogs: result, title: "all blogs" })
-    )
+app.delete("/blogs/:id", (req, res) => {
+  let id = req.params.id;
+  Blog.findByIdAndDelete(id)
+    .then((result) => {
+      res.json({ redirect: "/blogs" });
+    })
     .catch((err) => console.log(err));
-});
-
-app.get("/blogs/create", (req, res) => {
-  res.render("create", { title: "create new blog" });
 });
 
 // 404 error page not found
